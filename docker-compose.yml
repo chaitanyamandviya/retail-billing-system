@@ -1,0 +1,48 @@
+version: '3.8'
+
+services:
+  postgres:
+    container_name: vandana_retail_postgres
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_USER: vandana_user
+      POSTGRES_PASSWORD: VandanaRetail@2025
+      POSTGRES_DB: vandana_db
+      PGDATA: /data/postgres
+    volumes:
+      - postgres_data:/data/postgres
+    ports:
+      - "5432:5432"
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U vandana_user -d vandana_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - retail-network
+
+  pgadmin:
+    container_name: vandana_retail_pgadmin
+    image: dpage/pgadmin4:latest
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@vandana.com
+      PGADMIN_DEFAULT_PASSWORD: admin123
+      PGADMIN_CONFIG_SERVER_MODE: 'False'
+    ports:
+      - "5050:80"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - retail-network
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
+    driver: local
+
+networks:
+  retail-network:
+    driver: bridge
+
